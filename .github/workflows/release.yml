@@ -1,0 +1,82 @@
+on:
+  push:
+    # Sequence of patterns matched against refs/tags
+    tags:
+    - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+name: Release a new version
+
+jobs:
+  release:
+    name: Release a new version
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2     
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false  
+  build:
+    needs: release
+    name: build release binnary
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        GOARCH: [amd64, arm64]
+        GOOS: [linux, darwin, windows]        
+        exclude:
+        - os: ubuntu-latest
+          GOOS: windows          
+        - os: ubuntu-latest
+          GOOS: darwin
+        - os: macos-latest
+          GOOS: linux
+        - os: macos-latest
+          GOOS: windows
+        - os: macos-latest
+          GOARCH: arm64
+        - os: windows-latest
+          GOOS: linux
+        - os: windows-latest
+          GOOS: darwin
+        - os: windows-latest
+          GOARCH: arm64
+        include:
+        - os: windows-latest          
+          EXT: .exe
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Build
+        run: |
+          GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} make TARGET_CLIENT=tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }} TARGET_SERVER=tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}      
+      - name: Upload Release Asset tcpbc
+        id: upload-release-asset-tcpbc
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+          asset_name: tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+          asset_content_type: application/octet-stream
+      - name: Upload Release Asset tcpbs
+        id: upload-release-asset-tcpbs
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.release.outputs.upload_url }}
+          asset_path: ./tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+          asset_name: tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+          asset_content_type: application/octet-stream          
