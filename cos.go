@@ -1,14 +1,23 @@
 package main
 
 import (
-	"os"
 	"net/http"
+	"os"
+
 	cos "github.com/tencentyun/cos-go-sdk-v5"
 )
 
-func newCosClient(bucketName, region string, auth *cos.AuthorizationTransport) *cos.Client {
-	bucketURL := cos.NewBucketURL(bucketName, region, true)
-	httpClient := &http.Client{Transport: auth}
+// bucketCfg bucket arguments
+type bucketCfg struct {
+	BucketName   string
+	BucketRegion string
+
+	Auth cos.AuthorizationTransport
+}
+
+func newCosClient(cfg *bucketCfg) *cos.Client {
+	bucketURL := cos.NewBucketURL(cfg.BucketName, cfg.BucketRegion, true)
+	httpClient := &http.Client{Transport: &cfg.Auth}
 
 	return cos.NewClient(&cos.BaseURL{BucketURL: bucketURL}, httpClient)
 }
@@ -19,7 +28,6 @@ func guessFileContentType(file string) (string, error) {
 		return "", err
 	}
 	defer f.Close()
-
 
 	// Only the first 512 bytes are used to sniff the content type.
 	buffer := make([]byte, 512)
