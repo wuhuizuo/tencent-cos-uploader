@@ -59,24 +59,14 @@ jobs:
         uses: actions/checkout@v2
       - name: Build
         run: |
-          GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} make TARGET_CLIENT=tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }} TARGET_SERVER=tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}      
-      - name: Upload Release Asset tcpbc
-        id: upload-release-asset-tcpbc
+          GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} make TARGET_CLIENT=tencent-cos-uploader.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+      - name: Upload Release Asset
+        id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
-          asset_name: tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+          asset_path: ./tencent-cos-uploader.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
+          asset_name: tencent-cos-uploader.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
           asset_content_type: application/octet-stream
-      - name: Upload Release Asset tcpbs
-        id: upload-release-asset-tcpbs
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ needs.release.outputs.upload_url }}
-          asset_path: ./tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
-          asset_name: tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
-          asset_content_type: application/octet-stream          

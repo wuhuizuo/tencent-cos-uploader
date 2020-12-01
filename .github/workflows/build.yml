@@ -17,7 +17,7 @@ jobs:
         GOOS: [linux, darwin, windows]        
         exclude:
         - os: ubuntu-latest
-          GOOS: windows          
+          GOOS: windows
         - os: ubuntu-latest
           GOOS: darwin
         - os: macos-latest
@@ -39,4 +39,4 @@ jobs:
       run: GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} go test -v .
     - name: Build
       run: |
-        GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} make TARGET_CLIENT=tcpbc.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }} TARGET_SERVER=tcpbs.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}      
+        GOOS=${{ matrix.GOOS }} GOARCH=${{ matrix.GOARCH }} make TARGET_CLIENT=tencent-cos-uploader.${{ matrix.GOOS }}.${{ matrix.GOARCH }}${{ matrix.EXT }}
